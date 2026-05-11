@@ -1,23 +1,19 @@
-# Scuffed flake setup
-### Set up the venv 
-Set the flake
+# Flake setup
+
+## Build the flake
+
 ```shell
-cp backup/use_to_create_venv_flake flake.nix
-```
-Use the flake
-```shell
-nix develop
-```
-### Run the test
-```shell
-python3 gaussian_test.py
+nix build #runtime
 ```
 
-### Swap to GammaBoard flake
+## Run the test
+
 ```shell
-cp backup/gammaboard_flake flake.nix
+./result/bin/python gaussian_test.py
 ```
 
-### GammaBoard test run
+## GammaBoard test run
+
+you can use this template to create a run on gammaboard
 
 * `madnis_test_run.toml`

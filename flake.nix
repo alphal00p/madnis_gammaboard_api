@@ -1,12 +1,18 @@
 {
-  description = "madnis gammaboard API - Runtime";
+  description = "madnis gammaboard API runtime";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+
+    # Prefer pinning this to a commit once it works.
+    madnis-src = {
+      url = "github:madgraph-ml/madnis/main";
+      flake = false;
+    };
   };
 
-  outputs = { self, nixpkgs, flake-utils, ... }:
+  outputs = { self, nixpkgs, flake-utils, madnis-src, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
@@ -14,9 +20,7 @@
           config.allowUnfree = true;
         };
 
-        projectSrc = ./src;
-        venvPython = ./.venv/bin/python;
-        venvSitePackages = ./.venv/lib/python3.12/site-packages;
+        python = pkgs.python312;
 
         libs = with pkgs; [
           stdenv.cc.cc.lib
@@ -26,21 +30,61 @@
           libmpc
         ];
 
-        hostPython = pkgs.writeShellScriptBin "python" ''
-          export PYTHONPATH="${projectSrc}:${venvSitePackages}:$PYTHONPATH"
-          export LD_LIBRARY_PATH="${pkgs.lib.makeLibraryPath libs}:/run/opengl-driver/lib:$LD_LIBRARY_PATH"
-          export OMP_NUM_THREADS=64
-          exec ${venvPython} "$@"
-        '';
+        libPath = pkgs.lib.makeLibraryPath libs;
 
-        runtime = pkgs.symlinkJoin {
+madnis = python.pkgs.buildPythonPackage {
+  pname = "madnis";
+  version = "main";
+  src = madnis-src;
+
+  pyproject = true;
+
+  nativeBuildInputs = with python.pkgs; [
+    setuptools
+    wheel
+  ];
+
+  propagatedBuildInputs = with python.pkgs; [
+    numpy
+    torch-bin
+  ];
+
+  dontCheckRuntimeDeps = true;
+  doCheck = false;
+};
+
+        pythonEnv = python.withPackages (ps: [
+          ps.numpy
+          ps.torch-bin
+          ps.setuptools
+          madnis
+        ]);
+
+        runtime = pkgs.stdenv.mkDerivation {
           name = "madnis-gammaboard-api-runtime";
+          src = ./.;
 
-          paths = [
-            hostPython
-            projectSrc
-            venvSitePackages
-          ];
+          dontBuild = true;
+
+          installPhase = ''
+            mkdir -p $out/src $out/bin
+            cp -r src/* $out/src/
+
+            cat > $out/bin/python <<'WRAPPER'
+#!/bin/sh
+export PYTHONPATH="@out@/src:''${PYTHONPATH:-}"
+export LD_LIBRARY_PATH="@libPath@:/run/opengl-driver/lib:''${LD_LIBRARY_PATH:-}"
+export OMP_NUM_THREADS=''${OMP_NUM_THREADS:-64}
+exec @python@ "$@"
+WRAPPER
+
+            substituteInPlace $out/bin/python \
+              --replace-fail "@out@" "$out" \
+              --replace-fail "@libPath@" "${libPath}" \
+              --replace-fail "@python@" "${pythonEnv}/bin/python"
+
+            chmod +x $out/bin/python
+          '';
         };
       in
       {
@@ -48,16 +92,16 @@
         packages.default = runtime;
 
         devShells.default = pkgs.mkShell {
-          buildInputs = libs;
+          packages = [
+            pythonEnv
+          ] ++ libs;
 
           shellHook = ''
-            source .venv/bin/activate
-
-            export PYTHONPATH="${projectSrc}:${venvSitePackages}:$PYTHONPATH"
-            export LD_LIBRARY_PATH="${pkgs.lib.makeLibraryPath libs}:/run/opengl-driver/lib:$LD_LIBRARY_PATH"
-            export OMP_NUM_THREADS=64
+            export PYTHONPATH="$PWD/src:''${PYTHONPATH:-}"
+            export LD_LIBRARY_PATH="${libPath}:/run/opengl-driver/lib:''${LD_LIBRARY_PATH:-}"
+            export OMP_NUM_THREADS=''${OMP_NUM_THREADS:-64}
           '';
         };
-      }
-    );
+      });
 }
+
