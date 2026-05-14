@@ -1,6 +1,8 @@
 # Ghost bump with the MADNIS process sampler.
 
 name = "ghost_bump_madnis"
+
+# Use this on UBELIX to ensure the job is scheduled on a GPU node
 sampler_requirements = { gpu = 1 }
 
 [evaluator]
@@ -22,7 +24,7 @@ max_samples = 200000
 
 [task_queue.sampler_aggregator.config]
 kind = "process_sampler"
-command = ["apptainer", "exec", "--nv", "runtimes/madnis_gammaboard_api/runtime.sif", "python", "-u", "/opt/madnis_gammaboard_api/sampler_worker.py"]
+command = ["apptainer", "exec", "--no-mount", "/etc/localtime", "--nv", "runtimes/madnis_gammaboard_api/runtime.sif", "python", "-u", "/opt/madnis_gammaboard_api/sampler_worker.py"]
 # Alternative with the Nix runtime when Nix is available:
 # command = ["runtimes/madnis_gammaboard_api/result/bin/python", "-u", "runtimes/madnis_gammaboard_api/sampler_worker.py"]
 continuous_dims = 2
