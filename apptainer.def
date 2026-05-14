@@ -32,28 +32,6 @@ From: python:3.12-bookworm
         "madnis @ git+https://github.com/madgraph-ml/madnis.git@main"
     python -m pip install --root-user-action=ignore --no-cache-dir --no-build-isolation "${PROJECT_DIR}"
     python - <<'PY'
-import importlib.util
-import shutil
-import site
-from pathlib import Path
-
-project_src = Path("/opt/madnis_gammaboard_api/src/madnis_gammaboard_api")
-project_file = Path("/opt/madnis_gammaboard_api/src/madnis_gammaboard_api.py")
-sampler_file = Path("/opt/madnis_gammaboard_api/src/madnis_sampler.py")
-if importlib.util.find_spec("madnis_gammaboard_api") is None and importlib.util.find_spec("madnis_sampler") is None:
-    target_root = Path(site.getsitepackages()[0])
-    if project_src.is_dir():
-        shutil.copytree(project_src, target_root / "madnis_gammaboard_api", dirs_exist_ok=True)
-    elif project_file.is_file():
-        shutil.copy2(project_file, target_root / "madnis_gammaboard_api.py")
-    elif sampler_file.is_file():
-        shutil.copy2(sampler_file, target_root / "madnis_sampler.py")
-    else:
-        raise SystemExit(
-            "runtime sampler module was not installed and no supported src module was found"
-        )
-PY
-    python - <<'PY'
 import madnis
 import madnis_sampler
 print("python runtime import check ok")

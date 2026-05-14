@@ -32,26 +32,26 @@
 
         libPath = pkgs.lib.makeLibraryPath libs;
 
-madnis = python.pkgs.buildPythonPackage {
-  pname = "madnis";
-  version = "main";
-  src = madnis-src;
+        madnis = python.pkgs.buildPythonPackage {
+          pname = "madnis";
+          version = "main";
+          src = madnis-src;
 
-  pyproject = true;
+          pyproject = true;
 
-  nativeBuildInputs = with python.pkgs; [
-    setuptools
-    wheel
-  ];
+          nativeBuildInputs = with python.pkgs; [
+            setuptools
+            wheel
+          ];
 
-  propagatedBuildInputs = with python.pkgs; [
-    numpy
-    torch-bin
-  ];
+          propagatedBuildInputs = with python.pkgs; [
+            numpy
+            torch-bin
+          ];
 
-  dontCheckRuntimeDeps = true;
-  doCheck = false;
-};
+          dontCheckRuntimeDeps = true;
+          doCheck = false;
+        };
 
         pythonEnv = python.withPackages (ps: [
           ps.numpy
@@ -104,4 +104,3 @@ WRAPPER
         };
       });
 }
-
