@@ -8,20 +8,20 @@ MADNIS sampler implementation for GammaBoard using the
 Apptainer is the most portable path for UBELIX and other non-Nix systems:
 
 ```bash
-apptainer build --force runtime.sif apptainer.def
+apptainer build --force madnis.sif apptainer.def
 ```
 
 The definition file builds from Git, not from the local checkout. Pin the exact
 source when needed:
 
 ```bash
-API_REF=<branch-or-commit> apptainer build --force runtime.sif apptainer.def
+API_REF=<branch-or-commit> apptainer build --force madnis.sif apptainer.def
 ```
 
 On UBELIX, run the build from the GammaBoard workspace:
 
 ```bash
-python ubelix.py build apptainer resources/runtimes/madnis_gammaboard_api/runtime.sif resources/runtimes/madnis_gammaboard_api/apptainer.def
+python ubelix.py build apptainer resources/runtimes/madnis_gammaboard_api/madnis.sif resources/runtimes/madnis_gammaboard_api/apptainer.def
 ```
 
 Nix is still supported where available:
