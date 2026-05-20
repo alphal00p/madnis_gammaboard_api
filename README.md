@@ -1,7 +1,7 @@
 # MADNIS GammaBoard API
 
-MADNIS sampler implementation plus a small `gammaboard-jsonrpc-v1` process
-worker for GammaBoard.
+MADNIS sampler implementation for GammaBoard using the
+`gammaboard_process.run_sampler(...)` Python wrapper.
 
 ## Build A Runtime
 
@@ -38,3 +38,9 @@ command as the active option and keeps the Nix command commented next to it.
 The sampler checkpoints are written below the GammaBoard resources directory, so
 paths such as `runtimes/madnis_gammaboard_api/checkpoints/...` are portable
 between local, ITPHLIES, and UBELIX deployments.
+
+The process entrypoint is:
+
+```bash
+python -u -m run_sampler
+```

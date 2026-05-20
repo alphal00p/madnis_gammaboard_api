@@ -10,9 +10,13 @@
       url = "github:madgraph-ml/madnis/main";
       flake = false;
     };
+    gammaboard-src = {
+      url = "github:alphal00p/gammaboard/main";
+      flake = false;
+    };
   };
 
-  outputs = { self, nixpkgs, flake-utils, madnis-src, ... }:
+  outputs = { self, nixpkgs, flake-utils, madnis-src, gammaboard-src, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
@@ -53,7 +57,26 @@
           doCheck = false;
         };
 
+        gammaboard-process = python.pkgs.buildPythonPackage {
+          pname = "gammaboard-process";
+          version = "0.1.0";
+          src = "${gammaboard-src}/process_api/python";
+          pyproject = true;
+
+          nativeBuildInputs = with python.pkgs; [
+            setuptools
+            wheel
+          ];
+
+          propagatedBuildInputs = with python.pkgs; [
+            numpy
+          ];
+
+          doCheck = false;
+        };
+
         pythonEnv = python.withPackages (ps: [
+          gammaboard-process
           ps.numpy
           ps.torch-bin
           ps.setuptools

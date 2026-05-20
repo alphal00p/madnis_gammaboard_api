@@ -30,10 +30,13 @@ From: python:3.12-bookworm
         torch
     python -m pip install --root-user-action=ignore --no-cache-dir --no-build-isolation \
         "madnis @ git+https://github.com/madgraph-ml/madnis.git@main"
+    python -m pip install --root-user-action=ignore --no-cache-dir --no-build-isolation \
+        "gammaboard-process @ git+https://github.com/alphal00p/gammaboard.git@main#subdirectory=process_api/python"
     python -m pip install --root-user-action=ignore --no-cache-dir --no-build-isolation "${PROJECT_DIR}"
     python - <<'PY'
 import madnis
 import madnis_sampler
+import gammaboard_process
 print("python runtime import check ok")
 PY
 
@@ -51,5 +54,6 @@ PY
     python - <<'PY'
 import madnis
 import madnis_sampler
+import gammaboard_process
 print("python runtime ok")
 PY

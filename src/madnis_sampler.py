@@ -8,15 +8,9 @@ from numpy.typing import NDArray
 from torch._tensor import Tensor
 from dataclasses import dataclass, asdict, field
 
+from gammaboard_process import SampleBatch, Sampler
 from madnis.integrator import Integrator, Integrand, losses
 from madnis.integrator import SampleBatch as MadnisSampleBatch
-
-
-@dataclass(frozen=True)
-class SampleBatch:
-    xs_discrete: NDArray[np.int64]
-    xs_continuous: NDArray[np.float64]
-    weights: NDArray[np.float64]
 
 
 @dataclass
@@ -128,13 +122,30 @@ class MadnisConfig:
         )
 
 
-class MadnisSampler:
+class MadnisSampler(Sampler):
     def __init__(
         self,
         *,
         discrete_cardinalities: List[int],
         continuous_dims: int,
-        cfg: MadnisConfig,
+        cfg: MadnisConfig | None = None,
+        seed: int = 42,
+        training_steps: int = 100,
+        training_batch_size: int = 1000,
+        max_batch_size: int = 100_000,
+        use_gpu: bool = True,
+        cuda_id: int = 1,
+        learning_rate: float = 1e-3,
+        use_scheduler: bool = True,
+        save_path: str | None = None,
+        scheduler_type: Literal["cosineannealing"] = "cosineannealing",
+        loss_type: Literal["variance", "variance_softclip",
+                           "kl_divergence", "kl_divergence_softclip"] = "kl_divergence",
+        discrete_dims_position: Literal["first", "last"] = "first",
+        discrete_model: Literal["transformer", "made"] = "transformer",
+        flow_config: dict[str, Any] | FlowConfig | None = None,
+        transformer_config: dict[str, Any] | TransformerConfig | None = None,
+        made_config: dict[str, Any] | MadeConfig | None = None,
         trained_samples: int | None = None,
         total_trained_samples: int | None = None,
         produced_batches: int | None = None,
@@ -159,7 +170,36 @@ class MadnisSampler:
         if self.continuous_dims <= 0:
             raise ValueError("continuous_dims must be > 0")
 
-        self.cfg: MadnisConfig = cfg
+        self.cfg: MadnisConfig = cfg or MadnisConfig(
+            seed=seed,
+            training_steps=training_steps,
+            training_batch_size=training_batch_size,
+            max_batch_size=max_batch_size,
+            use_gpu=use_gpu,
+            cuda_id=cuda_id,
+            learning_rate=learning_rate,
+            use_scheduler=use_scheduler,
+            save_path=save_path,
+            scheduler_type=scheduler_type,
+            loss_type=loss_type,
+            discrete_dims_position=discrete_dims_position,
+            discrete_model=discrete_model,
+            flow_config=(
+                flow_config
+                if isinstance(flow_config, FlowConfig)
+                else FlowConfig(**(flow_config or {}))
+            ),
+            transformer_config=(
+                transformer_config
+                if isinstance(transformer_config, TransformerConfig)
+                else TransformerConfig(**(transformer_config or {}))
+            ),
+            made_config=(
+                made_config
+                if isinstance(made_config, MadeConfig)
+                else MadeConfig(**(made_config or {}))
+            ),
+        )
         self.device = self._get_device()
         self.step: int = step or 0
         self.last_loss: float | None = last_loss or None
@@ -186,20 +226,6 @@ class MadnisSampler:
             self.madnis: Integrator = torch.load(buffer, map_location=self.device, weights_only=False)
         else:
             self.madnis: Integrator = self._get_madnis_integrator()
-
-    @classmethod
-    def from_config(
-        cls,
-        *,
-        discrete_cardinalities: List[int],
-        continuous_dims: int,
-        init_args: dict[str, Any] | None = None,
-    ) -> MadnisSampler:
-        return cls(
-            discrete_cardinalities=discrete_cardinalities,
-            continuous_dims=int(continuous_dims),
-            cfg=MadnisConfig.from_dict(init_args or {}),
-        )
 
     @classmethod
     def from_snapshot(

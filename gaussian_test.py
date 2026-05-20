@@ -79,7 +79,7 @@ if __name__ == "__main__":
     cdim = 3
     from_prepared = True and Path("prepared_state.pkl").exists()
     init_args = asdict(config)
-    sampler = MadnisSampler.from_config(discrete_cardinalities=ddim, continuous_dims=cdim, init_args=init_args)
+    sampler = MadnisSampler(discrete_cardinalities=ddim, continuous_dims=cdim, **init_args)
     snapshot = sampler.snapshot()
     save_path = Path(snapshot.get("save_path") or "")
     snapshot_path = Path("snapshot.json")

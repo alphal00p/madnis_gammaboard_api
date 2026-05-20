@@ -24,17 +24,15 @@ max_samples = 200000
 
 [task_queue.sampler_aggregator.config]
 kind = "process_sampler"
-command = ["apptainer", "exec", "--no-mount", "/etc/localtime", "--nv", "runtimes/madnis_gammaboard_api/runtime.sif", "python", "-u", "/opt/madnis_gammaboard_api/sampler_worker.py"]
+command = ["apptainer", "exec", "--no-mount", "/etc/localtime", "--nv", "runtimes/madnis_gammaboard_api/runtime.sif", "python", "-u", "-m", "run_sampler"]
 # Alternative with the Nix runtime when Nix is available:
-# command = ["runtimes/madnis_gammaboard_api/result/bin/python", "-u", "runtimes/madnis_gammaboard_api/sampler_worker.py"]
-continuous_dims = 2
+# command = ["runtimes/madnis_gammaboard_api/result/bin/python", "-u", "-m", "run_sampler"]
 requires_training_values = true
 
 [task_queue.sampler_aggregator.config.args]
-module = "madnis_sampler"
-class = "MadnisSampler"
 seed = 0
-training_samples = 200000
+training_steps = 200
+training_batch_size = 1000
 save_path = "runtimes/madnis_gammaboard_api/checkpoints/ghost_bump_madnis"
 
 [[task_queue]]
