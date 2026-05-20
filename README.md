@@ -35,9 +35,11 @@ nix build .#runtime
 `madnis_test_run.toml` is a ready-to-copy run template. It shows the Apptainer
 command as the active option and keeps the Nix command commented next to it.
 
-The sampler checkpoints are written below the GammaBoard resources directory, so
-paths such as `$resources/processes/madnis_gammaboard_api/checkpoints/...` are portable
-between local, ITPHLIES, and UBELIX deployments.
+The sampler command uses `$resources` because GammaBoard expands it in process
+commands. Sampler `args` are passed through unchanged, so `save_path` should be
+relative to the process cwd, which defaults to `$resources`; paths such as
+`processes/madnis_gammaboard_api/checkpoints/...` are portable between local,
+ITPHLIES, and UBELIX deployments.
 
 The process entrypoint is:
 
