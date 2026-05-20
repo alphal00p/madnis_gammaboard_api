@@ -21,7 +21,7 @@ API_REF=<branch-or-commit> apptainer build --force madnis.sif apptainer.def
 On UBELIX, run the build from the GammaBoard workspace:
 
 ```bash
-python ubelix.py build apptainer resources/runtimes/madnis_gammaboard_api/madnis.sif resources/runtimes/madnis_gammaboard_api/apptainer.def
+python ubelix.py build apptainer resources/processes/madnis_gammaboard_api/madnis.sif resources/processes/madnis_gammaboard_api/apptainer.def
 ```
 
 Nix is still supported where available:
@@ -36,7 +36,7 @@ nix build .#runtime
 command as the active option and keeps the Nix command commented next to it.
 
 The sampler checkpoints are written below the GammaBoard resources directory, so
-paths such as `runtimes/madnis_gammaboard_api/checkpoints/...` are portable
+paths such as `$resources/processes/madnis_gammaboard_api/checkpoints/...` are portable
 between local, ITPHLIES, and UBELIX deployments.
 
 The process entrypoint is:

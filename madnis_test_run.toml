@@ -24,16 +24,16 @@ max_samples = 200000
 
 [task_queue.sampler_aggregator.config]
 kind = "process_sampler"
-command = ["apptainer", "exec", "--no-mount", "/etc/localtime", "--nv", "processes/madnis_gammaboard_api/madnis.sif", "python", "-u", "-m", "run_sampler"]
+command = ["apptainer", "exec", "--no-mount", "/etc/localtime", "--nv", "$resources/processes/madnis_gammaboard_api/madnis.sif", "madnis-gammaboard-sampler"]
 # Alternative with the Nix runtime when Nix is available:
-# command = ["processes/madnis_gammaboard_api/result/bin/python", "-u", "-m", "run_sampler"]
+# command = ["$resources/processes/madnis_gammaboard_api/result/bin/python", "-u", "-m", "run_sampler"]
 requires_training_values = true
 
 [task_queue.sampler_aggregator.config.args]
 seed = 0
 training_steps = 200
 training_batch_size = 1000
-save_path = "processes/madnis_gammaboard_api/checkpoints/ghost_bump_madnis"
+save_path = "$resources/processes/madnis_gammaboard_api/checkpoints/ghost_bump_madnis"
 
 [[task_queue]]
 name = "pdf-2d"
