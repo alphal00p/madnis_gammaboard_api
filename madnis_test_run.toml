@@ -24,7 +24,7 @@ max_samples = 200000
 
 [task_queue.sampler_aggregator.config]
 kind = "process_sampler"
-command = ["apptainer", "exec", "--no-mount", "/etc/localtime", "--nv", "runtimes/madnis_gammaboard_api/madnis.sif", "python", "-u", "-m", "run_sampler"]
+command = ["apptainer", "exec", "--no-mount", "/etc/localtime", "--nv", "runtimes/madnis_gammaboard_api/madnis.sif", "madnis-gammaboard-sampler"]
 # Alternative with the Nix runtime when Nix is available:
 # command = ["runtimes/madnis_gammaboard_api/result/bin/python", "-u", "-m", "run_sampler"]
 requires_training_values = true

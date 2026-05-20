@@ -12,6 +12,9 @@ dependencies = [
     "madnis @ git+https://github.com/madgraph-ml/madnis.git@main",
 ]
 
+[project.scripts]
+madnis-gammaboard-sampler = "run_sampler:main"
+
 [tool.setuptools]
 package-dir = { "" = "src" }
 py-modules = ["madnis_sampler", "run_sampler"]
